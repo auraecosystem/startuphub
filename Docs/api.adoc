@@ -1,0 +1,1599 @@
+# StartupHub.ai API
+
+Programmatic access to 18k+ AI startups, 50k+ funding rounds, investors, people, products, patents, research, exits, and news.
+
+- **REST base**: `https://www.startuphub.ai/api/v1`
+- **MCP endpoint**: `https://www.startuphub.ai/api/mcp`
+- **Docs**: https://www.startuphub.ai/api-docs
+- **Get an API key (free)**: https://www.startuphub.ai/my-account?tab=api
+- **Setup wizard (Clay, Make, n8n, CRM)**: https://www.startuphub.ai/integrations/setup
+
+## Introduction
+
+Access the world's most comprehensive startup intelligence platform programmatically. Search startups and investors across 50+ fields, enrich profiles with AI, find logos, discover and validate emails, scan AI agent readiness, and connect via MCP to Claude, Cursor, Windsurf, and other AI tools.
+
+**Base URL:** `https://www.startuphub.ai/api/v1`
+
+**Quick start:**
+
+```bash
+curl "https://www.startuphub.ai/api/v1/startups?q=anthropic" \
+  -H "Authorization: Bearer sk_live_..."
+```
+
+## Authentication
+
+All API requests require a Bearer token in the `Authorization` header.
+
+1. Go to https://www.startuphub.ai/my-account?tab=api
+2. Create an API key (up to 3 per account)
+3. Copy the key immediately (shown only once)
+4. Pass it as `Authorization: Bearer sk_live_...`
+
+```http
+Authorization: Bearer sk_live_a1b2c3d4e5f6...
+```
+
+> API keys are sensitive. Never expose them in client-side code, public repos, or browser requests.
+
+## Endpoints
+
+### GET /startups — Search Startups
+
+**GET** `https://www.startuphub.ai/api/v1/startups`
+
+Search and filter the startup database by name, sector, country, tech stack, stealth status, founder-contact availability, and more. Returns paginated results with metadata. This is the API surface that powers stealth-startup deal-flow workflows for VC, M&A, and corp-dev buyers.
+
+**Cost:** 1 credit per request
+
+**Query parameters:**
+
+- `q` (string) — Search query (matches name, description)
+- `sector` (string) — Filter by sector (e.g. "AI", "Fintech")
+- `country` (string) — Filter by HQ country
+- `status` (string) — Operating status: Active, Acquired, Closed
+- `employees_min` (integer) — Min employee count
+- `employees_max` (integer) — Max employee count
+- `founded_after` (string) — Founded on or after this date (YYYY-MM-DD)
+- `founded_before` (string) — Founded on or before this date (YYYY-MM-DD)
+- `sort` (string) — Sort field.dir: founded_date.desc, total_funding.desc, total_score.desc, current_revenue.desc, employee_count.desc, employee_growth_quarterly_cagr.desc, latest_funding_date.desc, created_at.desc
+- `stealth` (string) — Stealth-mode filter. "true" = stealth only, "false" = exclude stealth. Stealth visibility requires Pro Lite tier or higher; Free tier never sees stealth rows.
+- `domain_tld` (string) — Comma-separated TLD list. e.g. "ai,io,so" returns only startups whose primary website sits on those TLDs. Indexed; fast.
+- `cdn` (string) — Comma-separated detected CDNs: "cloudflare", "vercel", "cloudfront", "fastly", "netlify". Detected per startup from response headers at promote-time.
+- `email_provider` (string) — Comma-separated detected email providers from MX records: "google_workspace", "m365", "zoho", "proton", "rackspace", "fastmail", "yandex", "mimecast", "proofpoint", "barracuda", "self_hosted", "gateway". Powers vendor-segmentation queries.
+- `has_known_emails` (string) — "true" returns only startups where at least one founder/team email has been verified (mass-discovered or claimed). Pro Lite tier and higher only. Pro Lite sees redacted emails (r***@company.com); Pro sees full addresses. This is the founders-with-emails moneymaker filter.
+- `hosting` (string) — Comma-separated detected hosting providers: aws, azure, gcp, vercel, render, railway, flyio, heroku, hetzner, ovh, vultr, linode, scaleway, digitalocean, netlify, github_pages. Detected via response headers (vendor-specific X-* tokens) + reverse-DNS on the resolved IP (catches Hetzner/OVH/Vultr/generic EC2 boxes).
+- `payment` (string) — Comma-separated detected payment processors: stripe, paddle, lemonsqueezy, polar, paypal, square, adyen, braintree, klarna, afterpay, affirm, bolt, mollie, razorpay, chargebee, recurly, plaid, coinbase_commerce, apple_pay, google_pay.
+- `compliance` (string) — Comma-separated compliance certifications detected in footer text/badges: soc2, hipaa, iso27001, iso27017, pci_dss, gdpr, ccpa, fedramp. The enterprise-buyer filter — SOC 2 certification is the single biggest signal for sales-led B2B readiness.
+- `status_page` (string) — Status page vendor (operational maturity proxy): statuspage, instatus, betterstack, freshstatus, statusgator.
+- `cookie_consent` (string) — EU/regulated-market compliance proxy via detected cookie consent vendor: onetrust, cookiebot, cookiehub, iubenda, termly, osano. Startups running OneTrust are typically selling into enterprise.
+- `hiring_platform` (string) — ATS / hiring vendor (proxy for stage + ATS sophistication): greenhouse, lever, ashby, workable, rippling_ats, recruitee, bamboohr.
+- `booking` (string) — Booking widget (sales-led B2B signal): calendly, calcom, savvycal, chilipiper.
+- `email_marketing` (string) — Email marketing / capture tool: klaviyo, mailchimp, convertkit, beehiiv, loops, hubspot_forms, customer_io, substack.
+- `ai_support` (string) — Customer-facing AI support widget (distinguishes "AI-using" from generic Intercom): intercom_fin, ada, sierra, decagon, drift_ai, fin_ai.
+- `a11y` (string) — Accessibility overlay widget (regulated-buyer signal): userway, accessibe, audioeye, equalweb.
+- `affiliate_program` (string) — Affiliate platform: partnerstack, rewardful, tolt, firstpromoter, impact, refersion, shareasale, cj_affiliate, rakuten_advertising, awin. Use affiliate_self_hosted to match startups that run their own affiliate page without a vendor.
+- `has_affiliate_program` (string) — "true" returns only startups with any affiliate program signal (vendor-detected OR self-hosted /affiliate page). Quick toggle for partnership-deal filtering.
+- `limit` (integer) — Results per page (1-100) — default `20`
+- `offset` (integer) — Pagination offset — default `0`
+
+**Errors:**
+
+- `401` — Invalid or missing API key
+- `403` — Filter requires higher tier (e.g. has_known_emails=true on Free)
+- `429` — Daily rate limit exceeded
+
+**cURL:**
+
+```bash
+# The "fresh stealth founder lead" query — every stealth startup on .ai
+# or .io with at least one verified founder email, newest first.
+curl "https://www.startuphub.ai/api/v1/startups?stealth=true&domain_tld=ai,io&has_known_emails=true&sort=founded_date.desc&limit=20" \
+  -H "Authorization: Bearer sk_live_..."
+```
+
+**JavaScript:**
+
+```javascript
+// Fresh stealth founder leads — the deal-flow query.
+const res = await fetch(
+  "https://www.startuphub.ai/api/v1/startups?stealth=true&domain_tld=ai,io&has_known_emails=true&sort=founded_date.desc&limit=20",
+  {
+    headers: {
+      Authorization: "Bearer sk_live_...",
+    },
+  }
+);
+
+const { data, pagination } = await res.json();
+// data[].tech_fingerprint exposes detected CDN, email provider, analytics
+// stack, payments, and frameworks. data[].domain_created_at is the RDAP
+// registration date so you can compute domain-age-vs-founding signals.
+```
+
+**Python:**
+
+```python
+import requests
+
+# Fresh stealth founder leads — the deal-flow query.
+resp = requests.get(
+    "https://www.startuphub.ai/api/v1/startups",
+    params={
+        "stealth": "true",
+        "domain_tld": "ai,io",
+        "has_known_emails": "true",
+        "sort": "founded_date.desc",
+        "limit": 20,
+    },
+    headers={"Authorization": "Bearer sk_live_..."},
+)
+
+data = resp.json()
+```
+
+**Response:**
+
+```json
+{
+  "data": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "Anthropic",
+      "slug": "anthropic",
+      "one_liner": "AI safety company building reliable AI systems",
+      "website": "https://anthropic.com",
+      "hq_country": "United States",
+      "hq_city": "San Francisco",
+      "founded_date": "2021-01-01",
+      "operating_status": "Active",
+      "sectors": ["AI", "Machine Learning"],
+      "total_score": 92.5,
+      "stealth_mode": null,
+      "domain_tld": "com",
+      "domain_created_at": "2021-01-06",
+      "has_known_emails": true,
+      "tech_fingerprint": {
+        "cdn": "cloudflare",
+        "email_provider": "google_workspace",
+        "email_provider_confidence": "high",
+        "analytics": ["ga4"],
+        "payments": [],
+        "frameworks": ["nextjs"],
+        "fingerprinted_at": "2026-05-21T09:14:00Z"
+      },
+      "logo_url": "https://cdn.startuphub.ai/..."
+    }
+  ],
+  "pagination": {
+    "total": 1,
+    "limit": 5,
+    "offset": 0
+  },
+  "credits": {
+    "used": 1,
+    "remaining": 49
+  }
+}
+```
+
+### GET /startups/:slug — Get Startup Profile
+
+**GET** `https://www.startuphub.ai/api/v1/startups/:slug`
+
+Retrieve the full profile for a startup by its URL slug. Fields returned depend on your plan tier (Free returns basic fields, Pro+ returns everything).
+
+**Cost:** 1 credit per request
+
+**Query parameters:**
+
+- `slug` (string) *(required)* — The startup slug (URL identifier)
+
+**Errors:**
+
+- `401` — Invalid or missing API key
+- `403` — Stealth profile (Pro+ required)
+- `404` — Startup not found
+
+**cURL:**
+
+```bash
+curl "https://www.startuphub.ai/api/v1/startups/anthropic" \
+  -H "Authorization: Bearer sk_live_..."
+```
+
+**JavaScript:**
+
+```javascript
+const res = await fetch(
+  "https://www.startuphub.ai/api/v1/startups/anthropic",
+  {
+    headers: {
+      Authorization: "Bearer sk_live_...",
+    },
+  }
+);
+
+const { data } = await res.json();
+```
+
+**Python:**
+
+```python
+import requests
+
+resp = requests.get(
+    "https://www.startuphub.ai/api/v1/startups/anthropic",
+    headers={"Authorization": "Bearer sk_live_..."},
+)
+
+data = resp.json()
+```
+
+**Response:**
+
+```json
+{
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "Anthropic",
+    "slug": "anthropic",
+    "one_liner": "AI safety company...",
+    "description": "Anthropic is an AI safety...",
+    "website": "https://anthropic.com",
+    "hq_country": "United States",
+    "total_funding": 15000000000,
+    "employee_count": 1500,
+    "sectors": ["AI", "ML"],
+    "total_score": 92.5,
+    "logo_url": "https://cdn.startuphub.ai/..."
+  }
+}
+```
+
+### GET /companies/technology — Company Technology Stack
+
+**GET** `https://www.startuphub.ai/api/v1/companies/technology`
+
+Scan a company website for its technology stack. The endpoint first checks StartupHub.ai for a matching company and cached tech fingerprint, then optionally runs a fresh live scan. Perfect for CRM enrich flows where each row has a website domain.
+
+**Cost:** 1 credit per request
+
+**Query parameters:**
+
+- `domain` (string) *(required)* — Company domain or URL (e.g. anthropic.com or https://anthropic.com/about)
+- `live` (boolean) — true = force a fresh live scan even when DB fingerprint exists — default `false`
+
+**Errors:**
+
+- `400` — Missing or invalid domain parameter
+- `401` — Invalid or missing API key
+- `429` — Insufficient credits
+
+**cURL:**
+
+```bash
+curl "https://www.startuphub.ai/api/v1/companies/technology?domain=anthropic.com&live=true" \
+  -H "Authorization: Bearer sk_live_..."
+```
+
+**JavaScript:**
+
+```javascript
+const res = await fetch(
+  "https://www.startuphub.ai/api/v1/companies/technology?domain=anthropic.com&live=true",
+  {
+    headers: {
+      Authorization: "Bearer sk_live_...",
+    },
+  }
+);
+const { data } = await res.json();
+```
+
+**Python:**
+
+```python
+import requests
+
+resp = requests.get(
+    "https://www.startuphub.ai/api/v1/companies/technology",
+    params={"domain": "anthropic.com", "live": "true"},
+    headers={"Authorization": "Bearer sk_live_..."},
+)
+data = resp.json()
+```
+
+**Response:**
+
+```json
+{
+  "data": {
+    "domain": "anthropic.com",
+    "source": "database+live",
+    "company": {
+      "id": "uuid",
+      "name": "Anthropic",
+      "slug": "anthropic",
+      "website": "https://anthropic.com",
+      "startuphub_url": "https://www.startuphub.ai/startups/anthropic",
+      "domain_tld": "com",
+      "domain_created_at": "2021-01-06"
+    },
+    "technology_stack": {
+      "resolved": {
+        "raw": {
+          "cdn": "cloudflare",
+          "hosting": "aws",
+          "email_provider": "google_workspace",
+          "frameworks": ["nextjs", "react"],
+          "payments": ["stripe"],
+          "analytics": ["ga4"],
+          "fingerprinted_at": "2026-05-25T15:20:00.000Z"
+        }
+      }
+    }
+  },
+  "credits": { "cost": 1, "remaining_period": 9999, "remaining_balance": 2000 }
+}
+```
+
+### GET /investors — Search Investors
+
+**GET** `https://www.startuphub.ai/api/v1/investors`
+
+Search VCs, angels, accelerators, and other investor types by name, country, or investor type.
+
+**Cost:** 1 credit per request
+
+**Query parameters:**
+
+- `q` (string) — Search query (name, description)
+- `country` (string) — Filter by country
+- `type` (string) — Investor type: VC, Angel, Accelerator, CVC, PE
+- `limit` (integer) — Results per page (1-100) — default `20`
+- `offset` (integer) — Pagination offset — default `0`
+
+**cURL:**
+
+```bash
+curl "https://www.startuphub.ai/api/v1/investors?q=sequoia&type=VC" \
+  -H "Authorization: Bearer sk_live_..."
+```
+
+**JavaScript:**
+
+```javascript
+const res = await fetch(
+  "https://www.startuphub.ai/api/v1/investors?q=sequoia&type=VC",
+  {
+    headers: {
+      Authorization: "Bearer sk_live_...",
+    },
+  }
+);
+```
+
+**Python:**
+
+```python
+import requests
+
+resp = requests.get(
+    "https://www.startuphub.ai/api/v1/investors",
+    params={"q": "sequoia", "type": "VC"},
+    headers={"Authorization": "Bearer sk_live_..."},
+)
+```
+
+**Response:**
+
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "name": "Sequoia Capital",
+      "investor_type": "VC",
+      "country": "United States",
+      "description": "...",
+      "total_score": 95.0
+    }
+  ],
+  "pagination": {
+    "total": 1,
+    "limit": 20,
+    "offset": 0
+  }
+}
+```
+
+### GET /people — Search People
+
+**GET** `https://www.startuphub.ai/api/v1/people`
+
+Search founders, executives, board members, and key team members by name, title, country, or sector.
+
+**Cost:** 1 credit per request
+
+**Query parameters:**
+
+- `q` (string) — Search query (matches name, title)
+- `country` (string) — Filter by country
+- `title` (string) — Filter by current title (partial match)
+- `sector` (string) — Filter by sector
+- `tag` (string) — Filter by tag: Unit 8200, Unit 81, Serial Entrepreneur, AI Expert, Investor, Has Exits
+- `limit` (integer) — Results per page (1-100) — default `20`
+- `offset` (integer) — Pagination offset — default `0`
+
+**Errors:**
+
+- `401` — Invalid or missing API key
+- `429` — Daily rate limit exceeded
+
+**cURL:**
+
+```bash
+curl "https://www.startuphub.ai/api/v1/people?tag=Unit+8200&limit=10" \
+  -H "Authorization: Bearer sk_live_..."
+```
+
+**JavaScript:**
+
+```javascript
+const res = await fetch(
+  "https://www.startuphub.ai/api/v1/people?tag=Unit+8200&limit=10",
+  {
+    headers: {
+      Authorization: "Bearer sk_live_...",
+    },
+  }
+);
+
+const { data, pagination } = await res.json();
+```
+
+**Python:**
+
+```python
+import requests
+
+resp = requests.get(
+    "https://www.startuphub.ai/api/v1/people",
+    params={"tag": "Unit 8200", "limit": 10},
+    headers={"Authorization": "Bearer sk_live_..."},
+)
+
+data = resp.json()
+```
+
+**Response:**
+
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "name": "Avi Shua",
+      "slug": "avi-shua",
+      "title": "CIO",
+      "current_title": "Chief Innovation Officer at Orca Security",
+      "city": "Tel Aviv",
+      "country": "Israel",
+      "sectors": ["Cybersecurity", "Cloud"],
+      "total_score": 85.0,
+      "tags": ["Unit 8200", "Serial Entrepreneur", "Has Exits"],
+      "avatar_url": "https://cdn.startuphub.ai/..."
+    }
+  ],
+  "pagination": {
+    "total": 1,
+    "limit": 5,
+    "offset": 0
+  },
+  "credits": {
+    "used": 1,
+    "remaining": 49
+  }
+}
+```
+
+### POST /logo — Logo Lookup
+
+**POST** `https://www.startuphub.ai/api/v1/logo`
+
+Find square and horizontal logos for any company across our 65M+ company-profile graph. Checks our curated logo cache first, then fetches live from the company website. Best-in-class success rate.
+
+**Cost:** 1 credit per request
+
+**Body parameters:**
+
+- `name` (string) — Company name (used for cache lookup)
+- `website` (string) *(required)* — Company website URL (required for live fetch)
+
+**cURL:**
+
+```bash
+curl -X POST "https://www.startuphub.ai/api/v1/logo" \
+  -H "Authorization: Bearer sk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Stripe", "website": "https://stripe.com"}'
+```
+
+**JavaScript:**
+
+```javascript
+const res = await fetch("https://www.startuphub.ai/api/v1/logo", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer sk_live_...",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    name: "Stripe",
+    website: "https://stripe.com",
+  }),
+});
+```
+
+**Python:**
+
+```python
+import requests
+
+resp = requests.post(
+    "https://www.startuphub.ai/api/v1/logo",
+    json={
+        "name": "Stripe",
+        "website": "https://stripe.com",
+    },
+    headers={"Authorization": "Bearer sk_live_..."},
+)
+```
+
+**Response:**
+
+```json
+{
+  "data": {
+    "name": "Stripe",
+    "square_logo": "https://cdn.startuphub.ai/logos/stripe.png",
+    "horizontal_logo": "https://cdn.startuphub.ai/logos/stripe-h.png",
+    "has_square": true,
+    "has_horizontal": true,
+    "source": "cache"
+  }
+}
+
+// has_horizontal is null/false for ~60% of companies (no marketing-site
+// wordmark to scrape). has_square is populated for ~95% of companies via
+// favicon + og:image fallbacks. Both fields surface as either a CDN URL
+// or null — clients should null-check before rendering.
+```
+
+### POST /enrich — Enrich Company
+
+**POST** `https://www.startuphub.ai/api/v1/enrich`
+
+Full AI-powered RAG enrichment. Creates a new profile if the company doesn't exist, triggers enrichment with live web data, and returns cached results if already enriched. Requires Pro Lite or higher.
+
+**Cost:** 5 credits per request
+
+**Body parameters:**
+
+- `name` (string) *(required)* — Company name
+- `website` (string) — Company website (improves matching)
+- `linkedin_url` (string) — Company LinkedIn profile URL
+
+**Errors:**
+
+- `403` — Requires Pro Lite or higher plan
+
+**cURL:**
+
+```bash
+curl -X POST "https://www.startuphub.ai/api/v1/enrich" \
+  -H "Authorization: Bearer sk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Anthropic", "website": "https://anthropic.com"}'
+```
+
+**JavaScript:**
+
+```javascript
+const res = await fetch("https://www.startuphub.ai/api/v1/enrich", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer sk_live_...",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    name: "Anthropic",
+    website: "https://anthropic.com",
+  }),
+});
+```
+
+**Python:**
+
+```python
+import requests
+
+resp = requests.post(
+    "https://www.startuphub.ai/api/v1/enrich",
+    json={
+        "name": "Anthropic",
+        "website": "https://anthropic.com",
+    },
+    headers={"Authorization": "Bearer sk_live_..."},
+)
+```
+
+**Response:**
+
+```json
+{
+  "data": {
+    "id": "uuid",
+    "name": "Anthropic",
+    "slug": "anthropic",
+    "description": "Anthropic is an AI safety...",
+    "website": "https://anthropic.com",
+    "total_funding": 15000000000,
+    "employee_count": 1500
+  },
+  "source": "cache",
+  "enriched": true
+}
+```
+
+### POST /email/discover — Discover Email
+
+**POST** `https://www.startuphub.ai/api/v1/email/discover`
+
+Find a professional email address given a person's name and company domain.
+
+**Cost:** 3 credits per request
+
+**Body parameters:**
+
+- `firstName` (string) *(required)* — Person's first name
+- `lastName` (string) *(required)* — Person's last name
+- `domain` (string) *(required)* — Company email domain (e.g. anthropic.com)
+
+**cURL:**
+
+```bash
+curl -X POST "https://www.startuphub.ai/api/v1/email/discover" \
+  -H "Authorization: Bearer sk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{"firstName":"Dario","lastName":"Amodei","domain":"anthropic.com"}'
+```
+
+**JavaScript:**
+
+```javascript
+const res = await fetch("https://www.startuphub.ai/api/v1/email/discover", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer sk_live_...",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    firstName: "Dario",
+    lastName: "Amodei",
+    domain: "anthropic.com",
+  }),
+});
+```
+
+**Python:**
+
+```python
+import requests
+
+resp = requests.post(
+    "https://www.startuphub.ai/api/v1/email/discover",
+    json={
+        "firstName": "Dario",
+        "lastName": "Amodei",
+        "domain": "anthropic.com",
+    },
+    headers={"Authorization": "Bearer sk_live_..."},
+)
+```
+
+**Response:**
+
+```json
+{
+  "found": true,
+  "email": "dario@anthropic.com",
+  "domain": "anthropic.com",
+  "totalCombinationsTested": 12
+}
+```
+
+### POST /email/validate — Validate Email
+
+**POST** `https://www.startuphub.ai/api/v1/email/validate`
+
+Verify if an email address is valid and deliverable.
+
+**Cost:** 1 credit per request
+
+**Body parameters:**
+
+- `email` (string) *(required)* — Email address to validate
+
+**cURL:**
+
+```bash
+curl -X POST "https://www.startuphub.ai/api/v1/email/validate" \
+  -H "Authorization: Bearer sk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{"email": "hello@anthropic.com"}'
+```
+
+**JavaScript:**
+
+```javascript
+const res = await fetch("https://www.startuphub.ai/api/v1/email/validate", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer sk_live_...",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    email: "hello@anthropic.com",
+  }),
+});
+```
+
+**Python:**
+
+```python
+import requests
+
+resp = requests.post(
+    "https://www.startuphub.ai/api/v1/email/validate",
+    json={"email": "hello@anthropic.com"},
+    headers={"Authorization": "Bearer sk_live_..."},
+)
+```
+
+**Response:**
+
+```json
+{
+  "email": "hello@anthropic.com",
+  "valid": true,
+  "reason": "Verified",
+  "details": null
+}
+```
+
+### POST /startups/submit — Submit a Startup
+
+**POST** `https://www.startuphub.ai/api/v1/startups/submit`
+
+Agent-friendly endpoint that lets an AI agent (or any API client) submit a new startup for inclusion on StartupHub.ai. Submissions enter a moderation queue and become public after admin approval (typically within 24h). Strict format: third-person prose, no HTML/markdown, no listicle titles. On bad input returns 400 with field-level errors and copy-paste suggestions so the agent can self-correct without human help. Optional logo_url is fetched and stored automatically (≤2MB).
+
+**Cost:** 5 credits per request
+
+**Body parameters:**
+
+- `name` (string) *(required)* — Official company name (≤80 chars; no listicle words like "best/top/2026")
+- `website` (string) *(required)* — Company website URL
+- `one_liner` (string) *(required)* — One-sentence pitch in third person, 20–200 chars
+- `description` (string) *(required)* — Full description in third person, 30–400 words, plain text only
+- `sectors` (array) *(required)* — 1–5 sectors from the controlled vocabulary
+- `founded_date` (string) — YYYY, YYYY-MM, or YYYY-MM-DD
+- `hq_country` (string) — Country
+- `hq_city` (string) — City
+- `linkedin_url` (string) — Company LinkedIn URL
+- `twitter_url` (string) — Company Twitter/X URL
+- `github_url` (string) — Company GitHub URL
+- `logo_url` (string) — Optional logo image URL — server fetches and stores (≤2MB, PNG/JPEG/WebP/SVG/GIF)
+- `stage` (string) — Pre-seed | Seed | Series A/B/C/D | Series E+ | Growth | Late Stage | Pre-IPO | Public | Acquired | Bootstrapped
+- `business_model` (string) — B2B SaaS | B2C SaaS | Marketplace | API/Developer Tools | Hardware | ...
+- `employee_count` (number) — 
+- `total_funding` (number) — USD
+- `latest_funding_round` (string) — e.g. "Series B"
+- `latest_funding_date` (string) — YYYY or YYYY-MM-DD
+- `latest_valuation` (number) — USD
+- `stock_exchange` (string) — NASDAQ | NYSE | ... — for public companies
+- `ticker` (string) — 
+- `linkedin_followers` (number) — 
+- `github_stars` (number) — 
+- `former_names` (array) — Previous company names
+- `facebook_url` (string) — 
+- `youtube_url` (string) — 
+- `blog_url` (string) — 
+- `substack_url` (string) — 
+- `discord_url` (string) — 
+- `slack_url` (string) — 
+- `community_url` (string) — 
+- `status_url` (string) — 
+- `changelog_url` (string) — 
+- `roadmap_url` (string) — 
+- `api_docs_url` (string) — 
+- `security_page_url` (string) — 
+- `demo_url` (string) — 
+- `demo_video_url` (string) — 
+- `coding_languages` (array) — e.g. ["Python", "TypeScript", "Rust"]
+- `frameworks_tools` (array) — 
+- `cloud_providers` (array) — e.g. ["AWS", "GCP"]
+- `certifications` (array) — SOC 2 | SOC 2 Type II | ISO 27001 | HIPAA | GDPR | PCI DSS | FedRAMP | ...
+- `is_raising` (boolean) — 
+- `raising_round` (string) — 
+- `raising_target` (number) — USD
+- `raising_use_of_funds` (string) — 
+- `pitch_deck_url` (string) — 
+- `is_hiring` (boolean) — 
+- `careers_url` (string) — 
+- `contact_email` (string) — 
+- `partnerships_email` (string) — 
+- `press_email` (string) — 
+- `founders` (array) — Array of { name, role, linkedin_url, email } — matched to existing people by slug / name / LinkedIn; unmatched stashed in admin review queue
+- `team_members` (array) — Same shape as founders
+- `notable_investors` (array) — Array of { name, slug, website } — matched to existing investors
+- `competitors` (array) — Array of { name, slug, website } — matched to existing startups
+- `mentioned_articles` (array) — Array of { slug } or { url } — links to StartupHub.ai posts; bidirectional
+- `products` (array) — Array of { name, description, url } — stashed in meta_fields for admin promotion
+
+**Errors:**
+
+- `400` — validation_failed — response includes errors[] with field, message, suggestion
+- `409` — duplicate — a profile with this website domain already exists
+- `429` — rate_limit — daily/monthly credit cap reached
+
+**cURL:**
+
+```bash
+curl -X POST "https://www.startuphub.ai/api/v1/startups/submit" \
+  -H "Authorization: Bearer sk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Anthropic",
+    "website": "https://anthropic.com",
+    "one_liner": "Anthropic builds reliable, interpretable, and steerable AI systems for the safety-conscious enterprise.",
+    "description": "Anthropic is an AI safety company building large-scale language models with a focus on reliability and interpretability. Founded in 2021 by former OpenAI executives, the company researches techniques for making AI systems more honest, harmless, and helpful. Anthropic offers Claude, an enterprise-grade chat assistant, alongside research APIs.",
+    "sectors": ["Artificial Intelligence", "AI Research"],
+    "founded_date": "2021",
+    "hq_country": "United States",
+    "hq_city": "San Francisco",
+    "logo_url": "https://anthropic.com/logo.png"
+  }'
+```
+
+**JavaScript:**
+
+```javascript
+const res = await fetch("https://www.startuphub.ai/api/v1/startups/submit", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer sk_live_...",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    name: "Anthropic",
+    website: "https://anthropic.com",
+    one_liner: "Anthropic builds reliable, interpretable, and steerable AI systems...",
+    description: "Anthropic is an AI safety company...",
+    sectors: ["Artificial Intelligence", "AI Research"],
+    founded_date: "2021",
+    hq_country: "United States",
+    logo_url: "https://anthropic.com/logo.png",
+  }),
+});
+const data = await res.json();
+if (!res.ok && data.error === "validation_failed") {
+  // Each error has { field, message, suggestion } — fix and retry
+  for (const err of data.errors) {
+    console.warn(`${err.field}: ${err.message} — ${err.suggestion}`);
+  }
+}
+```
+
+**Python:**
+
+```python
+import requests
+
+resp = requests.post(
+    "https://www.startuphub.ai/api/v1/startups/submit",
+    json={
+        "name": "Anthropic",
+        "website": "https://anthropic.com",
+        "one_liner": "Anthropic builds reliable, interpretable, and steerable AI systems...",
+        "description": "Anthropic is an AI safety company...",
+        "sectors": ["Artificial Intelligence", "AI Research"],
+        "founded_date": "2021",
+        "hq_country": "United States",
+        "logo_url": "https://anthropic.com/logo.png",
+    },
+    headers={"Authorization": "Bearer sk_live_..."},
+)
+data = resp.json()
+if resp.status_code == 400 and data.get("error") == "validation_failed":
+    for err in data["errors"]:
+        print(f"{err['field']}: {err['message']} -- {err.get('suggestion', '')}")
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "status": "pending_review",
+  "message": "Submission received. An admin will review within 24 hours. The profile is not publicly visible until approved.",
+  "startup": {
+    "id": "uuid",
+    "slug": "anthropic",
+    "name": "Anthropic",
+    "url": "https://www.startuphub.ai/startups/anthropic",
+    "moderation_status": "flagged_pending",
+    "logo_url": "https://bsmromhjxdnndenlrpgx.supabase.co/storage/v1/object/public/entity-images/startups/uuid.png"
+  },
+  "credits": { "used": 5, "limit": 100, "remaining": 95 }
+}
+```
+
+### POST /investors/submit — Submit an Investor
+
+**POST** `https://www.startuphub.ai/api/v1/investors/submit`
+
+Submit a new investor profile (VC, angel, accelerator, etc.) for moderation review. Same flow as Submit a Startup. Deduped by website domain or name+country.
+
+**Cost:** 5 credits per request
+
+**Body parameters:**
+
+- `name` (string) *(required)* — Official firm name (≤100 chars)
+- `type` (string) *(required)* — VC | Angel | Accelerator | Incubator | Corporate VC | Family Office | Sovereign Wealth Fund | Crowdfunding | PE | Hedge Fund | Syndicate
+- `description` (string) *(required)* — Third-person, 20–400 words
+- `website` (string) — Firm website
+- `country` (string) — 
+- `city` (string) — 
+- `sector_focus` (array) — Up to 10 sectors invested in
+- `stage_focus` (array) — Pre-seed | Seed | Series A | Series B | Series C | Series D | Growth | Late Stage
+- `logo_url` (string) — Optional logo URL (≤2MB)
+
+**cURL:**
+
+```bash
+curl -X POST "https://www.startuphub.ai/api/v1/investors/submit" \
+  -H "Authorization: Bearer sk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Sequoia Capital",
+    "type": "VC",
+    "description": "Sequoia Capital is a venture capital firm founded in 1972 with a focus on technology and consumer companies. The firm invests across stages from seed to growth and has backed companies including Apple, Google, and Nvidia.",
+    "website": "https://sequoiacap.com",
+    "country": "United States",
+    "city": "Menlo Park",
+    "stage_focus": ["Seed", "Series A", "Series B", "Growth"]
+  }'
+```
+
+**JavaScript:**
+
+```javascript
+const res = await fetch("https://www.startuphub.ai/api/v1/investors/submit", {
+  method: "POST",
+  headers: { Authorization: "Bearer sk_live_...", "Content-Type": "application/json" },
+  body: JSON.stringify({
+    name: "Sequoia Capital",
+    type: "VC",
+    description: "Sequoia Capital is a venture capital firm...",
+    website: "https://sequoiacap.com",
+    stage_focus: ["Seed", "Series A", "Growth"],
+  }),
+});
+```
+
+**Python:**
+
+```python
+import requests
+resp = requests.post(
+    "https://www.startuphub.ai/api/v1/investors/submit",
+    json={
+        "name": "Sequoia Capital",
+        "type": "VC",
+        "description": "Sequoia Capital is a venture capital firm...",
+        "website": "https://sequoiacap.com",
+        "stage_focus": ["Seed", "Series A", "Growth"],
+    },
+    headers={"Authorization": "Bearer sk_live_..."},
+)
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "status": "pending_review",
+  "investor": { "id": "uuid", "slug": "sequoia-capital", "name": "Sequoia Capital",
+    "url": "https://www.startuphub.ai/investors/sequoia-capital",
+    "moderation_status": "flagged_pending" },
+  "credits": { "used": 5, "limit": 100, "remaining": 95 }
+}
+```
+
+### POST /people/submit — Submit a Person
+
+**POST** `https://www.startuphub.ai/api/v1/people/submit`
+
+Submit a new person profile (founder, executive, board member). Requires either current_title or linkedin_url to disambiguate from common-name dupes. Third-person bio, plain text, ≤300 words.
+
+**Cost:** 5 credits per request
+
+**Body parameters:**
+
+- `name` (string) *(required)* — Person's full name (≤80 chars)
+- `current_title` (string) — e.g. "CEO at OpenAI" — required if no linkedin_url
+- `linkedin_url` (string) — Personal LinkedIn (linkedin.com/in/...) — required if no current_title
+- `description` (string) — Third-person bio, ≤300 words
+- `city` (string) — 
+- `country` (string) — 
+- `twitter_url` (string) — 
+- `github_url` (string) — 
+- `avatar_url` (string) — Optional avatar image URL (≤2MB)
+
+**cURL:**
+
+```bash
+curl -X POST "https://www.startuphub.ai/api/v1/people/submit" \
+  -H "Authorization: Bearer sk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Dario Amodei",
+    "current_title": "CEO and Co-founder at Anthropic",
+    "linkedin_url": "https://linkedin.com/in/darioamodei",
+    "description": "Dario Amodei is the CEO and co-founder of Anthropic. He previously served as VP of Research at OpenAI.",
+    "country": "United States"
+  }'
+```
+
+**JavaScript:**
+
+```javascript
+const res = await fetch("https://www.startuphub.ai/api/v1/people/submit", {
+  method: "POST",
+  headers: { Authorization: "Bearer sk_live_...", "Content-Type": "application/json" },
+  body: JSON.stringify({
+    name: "Dario Amodei",
+    current_title: "CEO and Co-founder at Anthropic",
+    linkedin_url: "https://linkedin.com/in/darioamodei",
+  }),
+});
+```
+
+**Python:**
+
+```python
+import requests
+resp = requests.post(
+    "https://www.startuphub.ai/api/v1/people/submit",
+    json={"name": "Dario Amodei", "current_title": "CEO and Co-founder at Anthropic",
+          "linkedin_url": "https://linkedin.com/in/darioamodei"},
+    headers={"Authorization": "Bearer sk_live_..."},
+)
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "status": "pending_review",
+  "person": { "id": "uuid", "slug": "dario-amodei", "name": "Dario Amodei",
+    "url": "https://www.startuphub.ai/people/dario-amodei",
+    "moderation_status": "flagged_pending" },
+  "credits": { "used": 5, "limit": 100, "remaining": 95 }
+}
+```
+
+### POST /agent-readiness — Agent Readiness Scan
+
+**POST** `https://www.startuphub.ai/api/v1/agent-readiness`
+
+Scans any website and scores how well it is optimised for AI agents — robots.txt, sitemap, llms.txt, llms-full.txt, markdown content-negotiation, MCP server card, and more. Returns a score out of 100, a letter grade, and per-check pass/warn/fail results with improvement suggestions. Using Clay? See /integrations/clay for the copy-paste HTTP API column setup.
+
+**Cost:** 1 credit per request
+
+**Body parameters:**
+
+- `url` (string) *(required)* — Full URL of the website to scan (e.g. https://anthropic.com)
+
+**cURL:**
+
+```bash
+curl -X POST "https://www.startuphub.ai/api/v1/agent-readiness" \
+  -H "Authorization: Bearer sk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{ "url": "https://anthropic.com" }'
+```
+
+**JavaScript:**
+
+```javascript
+const res = await fetch("https://www.startuphub.ai/api/v1/agent-readiness", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer sk_live_...",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ url: "https://anthropic.com" }),
+});
+
+const { data } = await res.json();
+console.log(data.totalScore, data.grade);
+```
+
+**Python:**
+
+```python
+import requests
+
+resp = requests.post(
+    "https://www.startuphub.ai/api/v1/agent-readiness",
+    headers={"Authorization": "Bearer sk_live_..."},
+    json={"url": "https://anthropic.com"},
+)
+
+data = resp.json()["data"]
+print(data["totalScore"], data["grade"])
+```
+
+**Response:**
+
+```json
+{
+  "data": {
+    "url": "https://anthropic.com",
+    "totalScore": 82,
+    "grade": "A",
+    "categories": [
+      { "category": "crawlability", "label": "Crawlability", "score": 100, "passed": 3, "total": 3 },
+      { "category": "content", "label": "Content", "score": 75, "passed": 3, "total": 4 },
+      { "category": "agent_protocols", "label": "Agent Protocols", "score": 60, "passed": 2, "total": 3 }
+    ],
+    "checks": [
+      {
+        "id": "robots-txt",
+        "label": "robots.txt present",
+        "status": "pass",
+        "category": "crawlability",
+        "weight": 3,
+        "detail": "robots.txt found and accessible."
+      },
+      {
+        "id": "llms-txt",
+        "label": "llms.txt present",
+        "status": "fail",
+        "category": "agent_protocols",
+        "weight": 3,
+        "detail": "No llms.txt found. Add one at /llms.txt to help agents discover your site structure.",
+        "fix_prompt": "Create /llms.txt at your site root listing your most important URLs (one per line, plain text). Example:\nhttps://example.com/about\nhttps://example.com/products\nhttps://example.com/api-docs\nThis is the primary discovery file for AI agents."
+      }
+    ],
+    "markdown": "## Agent Readiness Report\n**Score:** 82/100 (A)\n...",
+    "scannedAt": "2026-04-23T12:00:00.000Z",
+    "totalMs": 1840
+  },
+  "credits": { "used": 1, "limit": 50, "remaining": 49 }
+}
+```
+
+### POST /lists/ai-generate — AI-Generated Startup Lists
+
+**POST** `https://www.startuphub.ai/api/v1/lists/ai-generate`
+
+Prompt → curated list of matching startups. Pass a natural-language brief ("stealth AI agent startups in Israel founded after 2024") and the engine runs a Google-grounded search, parses the results, finds or creates the matching startup rows, and returns up to 50 IDs you can hand to /lists/submit to publish. Pair with /v1/lists/submit for a complete prompt-to-public-list workflow. Each call: 5 credits.
+
+**Cost:** 5 credits per request
+
+**Body parameters:**
+
+- `prompt` (string) — Natural-language brief — required unless pasted_list is provided
+- `pasted_list` (string) — Raw text (YC batch page, a16z portfolio, CSV, article). Names + context extracted automatically.
+- `type` (string) — Entity type — only "startup" supported today — default `startup`
+- `limit` (integer) — Max suggestions to return (1-50) — default `20`
+
+**Errors:**
+
+- `400` — Both prompt and pasted_list missing, or type !== "startup"
+- `429` — Daily / monthly cap hit, OR per-user 10-call-per-10-minute burst limit
+- `502` — AI returned no usable results (try a more specific prompt)
+- `504` — Gemini timeout — retry with simpler prompt
+
+**cURL:**
+
+```bash
+curl -X POST "https://www.startuphub.ai/api/v1/lists/ai-generate" \
+  -H "Authorization: Bearer sk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "stealth AI agent startups in Israel founded after 2024",
+    "limit": 15
+  }'
+```
+
+**JavaScript:**
+
+```javascript
+const res = await fetch("https://www.startuphub.ai/api/v1/lists/ai-generate", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer sk_live_...",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    prompt: "stealth AI agent startups in Israel founded after 2024",
+    limit: 15,
+  }),
+});
+
+const { data } = await res.json();
+console.log(`Found ${data.matched} startups (${data.created} brand new)`);
+```
+
+**Python:**
+
+```python
+import requests
+
+resp = requests.post(
+    "https://www.startuphub.ai/api/v1/lists/ai-generate",
+    json={
+        "prompt": "stealth AI agent startups in Israel founded after 2024",
+        "limit": 15,
+    },
+    headers={"Authorization": "Bearer sk_live_..."},
+)
+data = resp.json()["data"]
+print(f"Found {data['matched']} startups ({data['created']} brand new)")
+```
+
+**Response:**
+
+```json
+{
+  "data": {
+    "found": [
+      {
+        "id": "uuid",
+        "name": "Anoma Labs",
+        "slug": "anoma-labs",
+        "logoUrl": "https://www.google.com/s2/favicons?domain=anomalabs.com&sz=128"
+      }
+    ],
+    "total_suggestions": 18,
+    "matched": 15,
+    "created": 3
+  },
+  "credits": { "used": 5, "limit": 15, "remaining": 10 }
+}
+
+// Pipe data.found[].id into POST /lists/submit to publish the
+// curated list as a public page on StartupHub.ai.
+```
+
+### GET /trends/current — AI Startup Trends Snapshot
+
+**GET** `https://www.startuphub.ai/api/v1/trends/current`
+
+Public, no-auth endpoint returning the current state of the AI startup ecosystem: rolling 7-day capital deployed vs prior week, biggest rounds, hottest sectors / countries / stages, recent exits, emerging themes, most active investors. Designed for the get_trends MCP tool so Claude / ChatGPT / Gemini can ground investment-thesis answers in fresh aggregated data. Cached at the CDN for 5 minutes; rate-limited per IP to 10/day for unauthenticated callers.
+
+**Cost:** 1 credit per request
+
+**Query parameters:**
+
+- `window` (string) — Aggregation window: "7d" (default) or "30d" — default `7d`
+
+**Errors:**
+
+- `429` — Rate limit exceeded (10 requests / day for anonymous callers — add an API key to lift the cap)
+
+**cURL:**
+
+```bash
+curl "https://www.startuphub.ai/api/v1/trends/current"
+```
+
+**JavaScript:**
+
+```javascript
+const res = await fetch("https://www.startuphub.ai/api/v1/trends/current");
+const { data } = await res.json();
+console.log(data.capital_deployed_7d, data.top_sectors);
+```
+
+**Python:**
+
+```python
+import requests
+
+resp = requests.get("https://www.startuphub.ai/api/v1/trends/current")
+data = resp.json()["data"]
+print(data["capital_deployed_7d"], data["top_sectors"])
+```
+
+**Response:**
+
+```json
+{
+  "data": {
+    "window": "7d",
+    "as_of": "2026-05-20T18:00:00Z",
+    "capital_deployed_7d": 6240000000,
+    "capital_deployed_prev_7d": 4180000000,
+    "wow_delta_pct": 49.3,
+    "round_count_7d": 87,
+    "biggest_rounds": [
+      { "startup": "Ricursive Intelligence", "amount": 650000000, "series": "Series B", "lead_investor": "..." }
+    ],
+    "top_sectors": [
+      { "sector": "AI Infrastructure", "capital": 2100000000, "rounds": 14 },
+      { "sector": "Agents", "capital": 980000000, "rounds": 22 }
+    ],
+    "top_countries": [
+      { "country": "United States", "capital": 4200000000, "rounds": 51 }
+    ],
+    "top_stages": [
+      { "series": "Series A", "rounds": 28, "median_amount": 18000000 }
+    ],
+    "active_investors": [
+      { "name": "Founderful", "rounds_led": 3, "rounds_participated": 5 }
+    ],
+    "exits": [
+      { "startup": "...", "type": "Acquisition", "amount": 450000000, "acquirer": "..." }
+    ]
+  }
+}
+```
+
+### GET /advertiser/analytics — Advertiser Analytics
+
+**GET** `https://www.startuphub.ai/api/v1/advertiser/analytics`
+
+Live performance for ads owned by your account: impressions, clicks, CTR, daily trend, by-placement and by-variant breakdown. Same JSON shape your /my-account?tab=ads dashboard renders. Free for own data — no credit cost.
+
+**Cost:** 1 credit per request
+
+**Query parameters:**
+
+- `ad_id` (integer) — Filter to a single ad (must be owned by you). Omit for all of your ads.
+- `days` (integer) — Lookback window in days (default 30, max 365).
+
+**cURL:**
+
+```bash
+curl -H "Authorization: Bearer sk_live_..." \
+  "https://www.startuphub.ai/api/v1/advertiser/analytics?days=30"
+```
+
+**JavaScript:**
+
+```javascript
+const res = await fetch("https://www.startuphub.ai/api/v1/advertiser/analytics?days=30", {
+  headers: { Authorization: "Bearer sk_live_..." },
+});
+const { ads, totals } = await res.json();
+console.log(totals.impressions, totals.clicks, totals.ctr);
+```
+
+**Python:**
+
+```python
+import requests
+resp = requests.get(
+    "https://www.startuphub.ai/api/v1/advertiser/analytics",
+    headers={"Authorization": "Bearer sk_live_..."},
+    params={"days": 30},
+)
+data = resp.json()
+print(data["totals"])
+```
+
+**Response:**
+
+```json
+{
+  "ads": [
+    {
+      "ad": { "id": 1234, "title": "Airwallex for global startups", "status": "active", "is_published": true },
+      "impressions": 48210,
+      "clicks": 312,
+      "ctr": 0.6,
+      "surface_breakdown": {
+        "article": { "impressions": 28100, "clicks": 178 },
+        "profile_page": { "impressions": 14210, "clicks": 95 },
+        "search": { "impressions": 5900, "clicks": 39 }
+      },
+      "variant_breakdown": {
+        "v1-uuid": { "impressions": 24000, "clicks": 165, "ctr": 0.7 },
+        "v2-uuid": { "impressions": 24210, "clicks": 147, "ctr": 0.6 }
+      },
+      "series": [
+        { "day": "2026-04-01", "impressions": 1620, "clicks": 11 },
+        { "day": "2026-04-02", "impressions": 1750, "clicks": 9 }
+      ]
+    }
+  ],
+  "totals": { "impressions": 48210, "clicks": 312, "ctr": 0.6 },
+  "window_days": 30
+}
+```
+
+### POST /monitor — Monitor a Company (webhooks)
+
+**POST** `https://www.startuphub.ai/api/v1/monitor`
+
+Create a watch on any company by URL and get alerts when it changes — funding, jobs, tech stack, headcount, news, status, pricing, new domains. Pass a webhook_url for near-real-time delivery: the moment a change is detected we POST a structured event to your endpoint. GET /monitor lists your watches (free); DELETE /monitor?id=… cancels one (free). Plan tier governs how many companies you can watch, the cadence, and which signals.
+
+**Cost:** 5 credits per request
+
+**Body parameters:**
+
+- `url` (string) *(required)* — Company website or domain to watch (e.g. acme.com). Works on stealth startups not yet in the directory.
+- `signals` (string[]) — funding, jobs, tech, headcount, news, status, pricing, domains. Defaults to everything your plan allows.
+- `frequency` (string) — Cadence: weekly | daily | 12h | 4h. Clamped to your plan max (faster = higher tier).
+- `webhook_url` (string) — HTTPS endpoint. We POST {event, entity_id, title, body, metadata, delivered_at} the moment a change is detected.
+- `delivery_channels` (string[]) — email | slack | teams. Defaults to email. webhook_url is independent and always fires when set.
+
+**Errors:**
+
+- `402` — Plan watch limit reached — upgrade to track more companies
+- `409` — You are already watching this domain
+
+**cURL:**
+
+```bash
+curl -X POST "https://www.startuphub.ai/api/v1/monitor" \
+  -H "Authorization: Bearer sk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{"url":"cursor.com","signals":["funding","jobs","pricing"],"webhook_url":"https://yourapp.com/hooks/monitor"}'
+```
+
+**JavaScript:**
+
+```javascript
+const res = await fetch("https://www.startuphub.ai/api/v1/monitor", {
+  method: "POST",
+  headers: { Authorization: "Bearer sk_live_...", "Content-Type": "application/json" },
+  body: JSON.stringify({
+    url: "cursor.com",
+    signals: ["funding", "jobs", "pricing"],
+    webhook_url: "https://yourapp.com/hooks/monitor",
+  }),
+});
+const { data } = await res.json();
+```
+
+**Python:**
+
+```python
+import requests
+resp = requests.post(
+    "https://www.startuphub.ai/api/v1/monitor",
+    headers={"Authorization": "Bearer sk_live_..."},
+    json={
+        "url": "cursor.com",
+        "signals": ["funding", "jobs", "pricing"],
+        "webhook_url": "https://yourapp.com/hooks/monitor",
+    },
+)
+print(resp.json()["data"])
+```
+
+**Response:**
+
+```json
+{
+  "data": {
+    "id": "a1b2c3d4-...",
+    "domain": "cursor.com",
+    "entity_name": "Cursor",
+    "frequency": "daily",
+    "signals": ["funding", "jobs", "pricing"],
+    "delivery_channels": ["email"],
+    "webhook_url": "https://yourapp.com/hooks/monitor",
+    "next_poll_at": "2026-05-25T20:30:00Z"
+  },
+  "credits": { "cost": 5, "remaining_period": 49995, "remaining_balance": 0 }
+}
+
+// Webhook payload — POSTed to webhook_url the moment a change is detected:
+{
+  "event": "funding",
+  "entity_id": "...",
+  "title": "Cursor raised a Series C",
+  "body": "Led by ... · $...",
+  "metadata": { "signal": "funding" },
+  "delivered_at": "2026-05-25T21:14:00Z"
+}
+```
+
+## Rate limits
+
+Daily credit limits reset at midnight UTC. Usage: https://www.startuphub.ai/my-account?tab=api. Top up: https://www.startuphub.ai/credits/buy — upgrade: https://www.startuphub.ai/pricing
+
+| Endpoint | Credits/call | Free | Pro Lite | Pro | Pro+ |
+| --- | --- | --- | --- | --- | --- |
+| Email Validate | 1 | 50/day | 500/day | 2,000/day | 10,000/day |
+| Email Discover | 3 | 5/day | 50/day | 200/day | 1,000/day |
+| Search / DB | 1 | 50/day | 500/day | 2,000/day | 10,000/day |
+| Profile | 1 | 25/day | 250/day | 1,000/day | 5,000/day |
+| Logo | 1 | 10/day | 100/day | 500/day | 2,500/day |
+| Enrich | 5 | — | 25/day | 100/day | 500/day |
+
+## Errors
+
+The API uses standard HTTP status codes. Error responses include an `error` field with a human-readable message.
+
+- **400 Bad Request** — Missing or invalid parameters
+- **401 Unauthorized** — Invalid or missing API key
+- **403 Forbidden** — Feature requires a higher plan tier
+- **404 Not Found** — Resource does not exist
+- **429 Rate Limited** — Daily credit limit exceeded
+- **500 Server Error** — Internal error (retry after a moment)
+
+**Example error response:**
+
+```json
+{
+  "error": "Rate limit exceeded",
+  "message": "You've reached your daily limit of 50 search requests. Upgrade to Pro Lite for higher limits.",
+  "upgrade_url": "https://www.startuphub.ai/pricing"
+}
+```
+
+## MCP server
+
+Connect StartupHub.ai to Claude Desktop, Cursor, Windsurf, or any MCP-compatible client. All REST endpoints are available as MCP tools.
+
+**Endpoint:** `https://www.startuphub.ai/api/mcp`
+
+**Config (Claude Desktop / Cursor):**
+
+```json
+{
+  "mcpServers": {
+    "startuphub": {
+      "url": "https://www.startuphub.ai/api/mcp",
+      "headers": {
+        "Authorization": "Bearer sk_live_..."
+      }
+    }
+  }
+}
+```
+
+The `Authorization` header is optional — without it you get free tools (email validate, email discover, agent readiness, logo, trends). Add a key to unlock startup search, submit, edit, and profile tools.
+
+**Claude Code one-liner:**
+
+```bash
+claude mcp add startuphub --transport http https://www.startuphub.ai/api/mcp \
+  --header "Authorization: Bearer sk_live_..."
+```
+
+Full tool catalog: https://www.startuphub.ai/mcp-server
+
+## No-code integrations
+
+Use email discover, validate, and agent-readiness in Zapier, Make, n8n, or Clay. Setup wizard: https://www.startuphub.ai/integrations/setup
+
+- **n8n** (Native node) — Install n8n-nodes-startuphub from Community Nodes. Guide: https://www.startuphub.ai/integrations/n8n
+- **Clay** (HTTP column) — Enrich Data → HTTP API column per row. Guide: https://www.startuphub.ai/integrations/clay
+- **Zapier** (Webhooks by Zapier) — Custom Request action; native app in review. Guide: https://www.startuphub.ai/integrations/zapier
+- **Make** (HTTP module) — HTTP "Make a request" module; native app coming. Guide: https://www.startuphub.ai/integrations/make
+
+---
+
+Generated from https://www.startuphub.ai/api-docs
