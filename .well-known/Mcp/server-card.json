@@ -1,0 +1,448 @@
+{
+  "serverInfo": {
+    "name": "StartupHub.ai",
+    "version": "1.0.0",
+    "description": "Search any AI startup, enrich profiles with AI, find logos, discover & validate emails."
+  },
+  "transport": {
+    "type": "streamable-http",
+    "url": "https://www.startuphub.ai/api/v1/mcp"
+  },
+  "capabilities": {
+    "tools": true,
+    "resources": false,
+    "prompts": false
+  },
+  "authentication": {
+    "type": "bearer",
+    "description": "Pass your API key as a Bearer token in the Authorization header. Get one at https://www.startuphub.ai/my-account?tab=api"
+  },
+  "tools": [
+    {
+      "name": "search_startups",
+      "description": "Search the startup database by name, sector, country, or status",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "q": {"type": "string", "description": "Search query"},
+          "sector": {"type": "string"},
+          "country": {"type": "string"},
+          "limit": {"type": "number", "default": 20}
+        }
+      }
+    },
+    {
+      "name": "get_startup",
+      "description": "Get full profile for a startup by slug",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {"type": "string", "description": "Startup slug"}
+        },
+        "required": ["slug"]
+      }
+    },
+    {
+      "name": "search_investors",
+      "description": "Search VCs, angels, and accelerators",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "q": {"type": "string"},
+          "country": {"type": "string"},
+          "type": {"type": "string"}
+        }
+      }
+    },
+    {
+      "name": "search_people",
+      "description": "Search founders, executives, board members, and key team members",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "q": {"type": "string", "description": "Search by name or title"},
+          "country": {"type": "string"},
+          "title": {"type": "string", "description": "Filter by current title"},
+          "sector": {"type": "string"}
+        }
+      }
+    },
+    {
+      "name": "find_logo",
+      "description": "Find square and horizontal logos for a company",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "website": {"type": "string"}
+        }
+      }
+    },
+    {
+      "name": "enrich_company",
+      "description": "Full AI-powered RAG enrichment for a company",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "website": {"type": "string"},
+          "linkedin_url": {"type": "string"}
+        },
+        "required": ["name"]
+      }
+    },
+    {
+      "name": "validate_email",
+      "description": "Verify if an email address is valid and deliverable",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "email": {"type": "string"}
+        },
+        "required": ["email"]
+      }
+    },
+    {
+      "name": "discover_email",
+      "description": "Find a professional email from name + domain",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "firstName": {"type": "string"},
+          "lastName": {"type": "string"},
+          "domain": {"type": "string"}
+        },
+        "required": ["firstName", "lastName", "domain"]
+      }
+    },
+    {
+      "name": "list_credit_packs",
+      "description": "Get available credit pack pricing. Call when a 402 is returned or the user asks to top up. Credits never expire.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "type": {"type": "string", "enum": ["validate", "discover"]}
+        }
+      }
+    },
+    {
+      "name": "scan_agent_readiness",
+      "description": "Scan any public URL against 18 AI-agent-readiness standards (robots.txt, llms.txt, MCP card, API catalog, OAuth discovery, markdown negotiation, Content Signals, x402, etc.). Returns 0-100 score + per-check results with copy-paste fix prompts. Free.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {"type": "string"}
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "name": "submit_startup",
+      "description": "Submit a new startup profile for inclusion on StartupHub.ai. Submissions enter a moderation queue (not publicly visible until an admin approves). Strict format: third-person prose, no listicle titles, no HTML/markdown. On bad input, returns 400 with field-level errors: { errors: [{ field, message, suggestion }] } so the agent can fix and retry. Costs 5 credits. One profile per company website domain. Optional logo_url is fetched and stored automatically (≤2MB).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string", "description": "Official company name (\u226480 chars; no listicle words like 'best/top/2026')"},
+          "website": {"type": "string", "description": "Company website URL"},
+          "one_liner": {"type": "string", "description": "One-sentence pitch in third person, 20-200 chars"},
+          "description": {"type": "string", "description": "Full description in third person, 30-400 words, plain text only"},
+          "sectors": {"type": "array", "items": {"type": "string"}, "description": "1-5 sectors from the controlled vocabulary"},
+          "founded_date": {"type": "string", "description": "YYYY, YYYY-MM, or YYYY-MM-DD"},
+          "hq_country": {"type": "string"},
+          "hq_city": {"type": "string"},
+          "linkedin_url": {"type": "string"},
+          "twitter_url": {"type": "string"},
+          "github_url": {"type": "string"},
+          "logo_url": {"type": "string", "description": "Optional URL to a company logo (PNG/JPEG/WebP/SVG, \u22642MB). Server fetches and stores it; no logo = auto-discover from website later."}
+        },
+        "required": ["name", "website", "one_liner", "description", "sectors"]
+      }
+    },
+    {
+      "name": "submit_investor",
+      "description": "Submit a new investor profile (VC/Angel/Accelerator/etc.) for moderation review. Same rules as submit_startup. Costs 5 credits. Deduped by website domain or name+country. Optional logo_url.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string", "description": "Official firm name (\u2264100 chars)"},
+          "website": {"type": "string"},
+          "type": {"type": "string", "description": "VC | Angel | Accelerator | Incubator | Corporate VC | Family Office | Sovereign Wealth Fund | Crowdfunding | PE | Hedge Fund | Syndicate"},
+          "description": {"type": "string", "description": "Third-person, 20-400 words"},
+          "country": {"type": "string"},
+          "city": {"type": "string"},
+          "sector_focus": {"type": "array", "items": {"type": "string"}, "description": "Up to 10 sectors invested in"},
+          "stage_focus": {"type": "array", "items": {"type": "string"}, "description": "Pre-seed | Seed | Series A | Series B | Series C | Series D | Growth | Late Stage"},
+          "linkedin_url": {"type": "string"},
+          "twitter_url": {"type": "string"},
+          "founded_date": {"type": "string"},
+          "logo_url": {"type": "string", "description": "Optional logo image URL (\u22642MB)."}
+        },
+        "required": ["name", "type", "description"]
+      }
+    },
+    {
+      "name": "submit_product",
+      "description": "Submit a new product / tool / API / library / agent / model / dataset / hardware. Optional startup_slug links to a parent company; omit if standalone. Strict format: third-person, no HTML, no listicle titles. Optional logo_url and screenshot_urls (up to 6) are fetched and stored automatically. Costs 5 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string", "description": "Product name (\u226480 chars)"},
+          "website": {"type": "string"},
+          "one_liner": {"type": "string", "description": "Third-person, 20-200 chars"},
+          "description": {"type": "string", "description": "Third-person, 20-400 words, plain text"},
+          "startup_slug": {"type": "string", "description": "Optional parent startup slug"},
+          "category": {"type": "string"},
+          "product_type": {"type": "string", "description": "web-app | mobile-app | desktop-app | api | cli | library | extension | mcp-server | agent | model | platform | dataset | hardware | plugin"},
+          "pricing_type": {"type": "string", "description": "free | freemium | paid | subscription | one-time | usage-based | enterprise | open-source"},
+          "pricing_details": {"type": "object"},
+          "features": {"type": "array", "items": {"type": "string"}},
+          "tags": {"type": "array", "items": {"type": "string"}},
+          "sectors": {"type": "array", "items": {"type": "string"}},
+          "app_store_url": {"type": "string"},
+          "play_store_url": {"type": "string"},
+          "documentation_url": {"type": "string"},
+          "github_repo": {"type": "string"},
+          "launched_at": {"type": "string"},
+          "logo_url": {"type": "string"},
+          "screenshot_urls": {"type": "array", "items": {"type": "string"}}
+        },
+        "required": ["name", "website", "one_liner", "description"]
+      }
+    },
+    {
+      "name": "submit_funding_round",
+      "description": "Announce a funding round for a startup you own. Strict: series from controlled vocab, USD amount, YYYY-MM-DD date. Optional lead/participating investor slugs. Dedup against same-startup same-series within 7 days. Costs 5 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "startup_slug": {"type": "string"},
+          "startup_id": {"type": "string"},
+          "series": {"type": "string", "description": "Pre-seed | Seed | Pre-Series A | Series A | Series B | ... | Convertible Note | SAFE | Bridge | Debt | Grant | Crowdfunding | Growth | Pre-IPO | Strategic | Secondary | Other"},
+          "investment_amount": {"type": "number", "description": "USD"},
+          "date_announced": {"type": "string", "description": "YYYY-MM-DD"},
+          "description": {"type": "string"},
+          "source_url": {"type": "string"},
+          "lead_investor_slugs": {"type": "array", "items": {"type": "string"}},
+          "participating_investor_slugs": {"type": "array", "items": {"type": "string"}},
+          "pre_money_valuation": {"type": "number"},
+          "post_money_valuation": {"type": "number"}
+        },
+        "required": ["series", "investment_amount", "date_announced"]
+      }
+    },
+    {
+      "name": "submit_exit_event",
+      "description": "Announce an IPO / Acquisition / Merger / SPAC / Buyout / Closure for a startup you own. acquirer_name required for Acquisition/Merger; stock_exchange + ticker required for IPO/SPAC. Costs 5 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "startup_slug": {"type": "string"},
+          "startup_id": {"type": "string"},
+          "transaction_type": {"type": "string", "description": "IPO | Acquisition | Merger | SPAC | Secondary Sale | Buyout | Management Buyout | Tender Offer | Asset Sale | Bankruptcy | Closure"},
+          "date_announced": {"type": "string"},
+          "consideration": {"type": "number"},
+          "valuation": {"type": "number"},
+          "acquirer_name": {"type": "string"},
+          "stock_exchange": {"type": "string"},
+          "ticker": {"type": "string"},
+          "description": {"type": "string"},
+          "source_url": {"type": "string"}
+        },
+        "required": ["transaction_type", "date_announced"]
+      }
+    },
+    {
+      "name": "submit_research",
+      "description": "Submit a research paper / preprint. Optional startup link. Dedup by arxiv_id or doi. Third-person abstract, 30-600 words. Costs 5 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "title": {"type": "string"},
+          "abstract": {"type": "string"},
+          "authors": {"type": "array", "items": {"type": "string"}},
+          "publication_date": {"type": "string"},
+          "arxiv_id": {"type": "string"},
+          "doi": {"type": "string"},
+          "pdf_url": {"type": "string"},
+          "source_url": {"type": "string"},
+          "startup_slug": {"type": "string"},
+          "sectors": {"type": "array", "items": {"type": "string"}}
+        },
+        "required": ["title", "abstract", "authors"]
+      }
+    },
+    {
+      "name": "submit_patent",
+      "description": "Submit a patent. patent_number required (e.g. US12345678B2). Dedup by patent_number. Costs 5 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "title": {"type": "string"},
+          "patent_number": {"type": "string"},
+          "assignee_name": {"type": "string"},
+          "inventors": {"type": "array", "items": {"type": "string"}},
+          "abstract": {"type": "string"},
+          "filing_date": {"type": "string"},
+          "grant_date": {"type": "string"},
+          "status": {"type": "string", "description": "Granted | Pending | Filed | Expired | Withdrawn | Other"},
+          "source_url": {"type": "string"},
+          "startup_slug": {"type": "string"},
+          "jurisdiction": {"type": "string"}
+        },
+        "required": ["title", "patent_number", "assignee_name"]
+      }
+    },
+    {
+      "name": "submit_news",
+      "description": "Submit a news article / press release. Strict: third-person, controlled categories, 100-10000 words. Dedup by source_url or similar title within 30 days. Costs 5 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "title": {"type": "string"},
+          "excerpt": {"type": "string"},
+          "content": {"type": "string"},
+          "categories": {"type": "array", "items": {"type": "string"}},
+          "tags": {"type": "array", "items": {"type": "string"}},
+          "featured_image_url": {"type": "string"},
+          "source_url": {"type": "string"},
+          "startup_slug": {"type": "string"},
+          "author_name": {"type": "string"}
+        },
+        "required": ["title", "content", "categories"]
+      }
+    },
+    {
+      "name": "submit_person",
+      "description": "Submit a new person profile (founder/executive/board member) for moderation review. Requires either current_title or linkedin_url to disambiguate from common-name dupes. Third-person bio, plain text. Costs 5 credits. Optional avatar_url.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string", "description": "Person's full name (\u226480 chars)"},
+          "current_title": {"type": "string", "description": "e.g. \"CEO at OpenAI\" — required if no linkedin_url"},
+          "description": {"type": "string", "description": "Third-person bio, \u2264300 words, no HTML"},
+          "city": {"type": "string"},
+          "country": {"type": "string"},
+          "linkedin_url": {"type": "string", "description": "Personal LinkedIn (linkedin.com/in/...) — required if no current_title"},
+          "twitter_url": {"type": "string"},
+          "github_url": {"type": "string"},
+          "website_url": {"type": "string"},
+          "avatar_url": {"type": "string", "description": "Optional avatar image URL (\u22642MB)."}
+        },
+        "required": ["name"]
+      }
+    },
+    {
+      "name": "update_startup",
+      "description": "Update an existing startup profile you previously submitted (your API-key user must match created_by). Pass slug + only the fields to change. Significant edits (description / one_liner / sectors) re-flag for admin re-review. Costs 1 db credit.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {"type": "string"},
+          "one_liner": {"type": "string"},
+          "description": {"type": "string"},
+          "sectors": {"type": "array", "items": {"type": "string"}},
+          "founded_date": {"type": "string"},
+          "hq_country": {"type": "string"},
+          "hq_city": {"type": "string"},
+          "linkedin_url": {"type": "string"},
+          "twitter_url": {"type": "string"},
+          "github_url": {"type": "string"},
+          "operating_status": {"type": "string"},
+          "is_raising": {"type": "boolean"},
+          "raising_round": {"type": "string"},
+          "raising_target": {"type": "number"},
+          "raising_use_of_funds": {"type": "string"},
+          "pitch_deck_url": {"type": "string"},
+          "contact_email": {"type": "string"},
+          "partnerships_email": {"type": "string"},
+          "press_email": {"type": "string"},
+          "is_hiring": {"type": "boolean"},
+          "careers_url": {"type": "string"},
+          "media_kit_url": {"type": "string"},
+          "for_sale": {"type": "boolean"},
+          "for_sale_details": {"type": "object"},
+          "logo_url": {"type": "string"}
+        },
+        "required": ["slug"]
+      }
+    },
+    {
+      "name": "update_investor",
+      "description": "Update an existing investor profile you previously submitted. Pass slug + only the fields to change. Costs 1 db credit.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {"type": "string"},
+          "description": {"type": "string"},
+          "type": {"type": "string"},
+          "country": {"type": "string"},
+          "city": {"type": "string"},
+          "sector_focus": {"type": "array", "items": {"type": "string"}},
+          "stage_focus": {"type": "array", "items": {"type": "string"}},
+          "linkedin_url": {"type": "string"},
+          "twitter_url": {"type": "string"},
+          "founded_date": {"type": "string"},
+          "actively_investing": {"type": "boolean"},
+          "accepts_cold_pitches": {"type": "boolean"},
+          "check_size_min": {"type": "number"},
+          "check_size_max": {"type": "number"},
+          "pitch_application_url": {"type": "string"},
+          "pitch_email": {"type": "string"},
+          "current_thesis": {"type": "string"},
+          "geo_focus": {"type": "array", "items": {"type": "string"}},
+          "min_traction": {"type": "string"},
+          "logo_url": {"type": "string"}
+        },
+        "required": ["slug"]
+      }
+    },
+    {
+      "name": "update_person",
+      "description": "Update an existing person profile you previously submitted. Pass slug + only the fields to change. Costs 1 db credit.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {"type": "string"},
+          "description": {"type": "string"},
+          "current_title": {"type": "string"},
+          "city": {"type": "string"},
+          "country": {"type": "string"},
+          "linkedin_url": {"type": "string"},
+          "twitter_url": {"type": "string"},
+          "github_url": {"type": "string"},
+          "website_url": {"type": "string"},
+          "avatar_url": {"type": "string"}
+        },
+        "required": ["slug"]
+      }
+    },
+    {
+      "name": "update_product",
+      "description": "Update an existing product profile you previously submitted (e.g. when you ship a new feature, change pricing, or launch a v2). Pass slug + only the fields to change. Significant edits re-flag for admin re-review. Costs 1 db credit.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {"type": "string"},
+          "one_liner": {"type": "string"},
+          "description": {"type": "string"},
+          "sectors": {"type": "array", "items": {"type": "string"}},
+          "category": {"type": "string"},
+          "product_type": {"type": "string"},
+          "pricing_type": {"type": "string"},
+          "pricing_details": {"type": "object"},
+          "features": {"type": "array", "items": {"type": "string"}},
+          "tags": {"type": "array", "items": {"type": "string"}},
+          "app_store_url": {"type": "string"},
+          "play_store_url": {"type": "string"},
+          "documentation_url": {"type": "string"},
+          "github_repo": {"type": "string"},
+          "website": {"type": "string"},
+          "launched_at": {"type": "string"},
+          "screenshot_urls": {"type": "array", "items": {"type": "string"}},
+          "logo_url": {"type": "string"}
+        },
+        "required": ["slug"]
+      }
+    }
+  ]
+}
