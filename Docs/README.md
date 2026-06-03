@@ -77,4 +77,4 @@ fetched and stored automatically (≤2MB, PNG/JPEG/WebP/SVG/GIF).
 > 
 - Website: https://www.startuphub.ai
 - Twitter: https://twitter.com/startuphubai
-- Email: founder@startuphub.ai
+- Email: email@startuphub.ai
