@@ -1,0 +1,113 @@
+{
+  "$schema": "https://agentskills.io/schema/v0.2.0/index.json",
+  "skills": [
+    {
+      "name": "search-startups",
+      "type": "api",
+      "description": "Search any AI startup by name, sector, country, funding stage, and operating status.",
+      "url": "https://www.startuphub.ai/api/v1/startups"
+    },
+    {
+      "name": "get-startup-profile",
+      "type": "api",
+      "description": "Get a full startup profile including description, funding, team, competitors, and scores.",
+      "url": "https://www.startuphub.ai/api/v1/startups/{slug}"
+    },
+    {
+      "name": "search-investors",
+      "type": "api",
+      "description": "Search VCs, angels, and accelerators by name, country, or investor type.",
+      "url": "https://www.startuphub.ai/api/v1/investors"
+    },
+    {
+      "name": "search-people",
+      "type": "api",
+      "description": "Search founders, executives, board members, and key team members by name, title, country, or sector.",
+      "url": "https://www.startuphub.ai/api/v1/people"
+    },
+    {
+      "name": "find-logo",
+      "type": "api",
+      "description": "Find square and horizontal company logos by name or website URL.",
+      "url": "https://www.startuphub.ai/api/v1/logo"
+    },
+    {
+      "name": "enrich-company",
+      "type": "api",
+      "description": "AI-powered RAG enrichment: create or enrich a company profile with live web data.",
+      "url": "https://www.startuphub.ai/api/v1/enrich"
+    },
+    {
+      "name": "validate-email",
+      "type": "api",
+      "description": "Verify if an email address is valid and deliverable.",
+      "url": "https://www.startuphub.ai/api/v1/email/validate"
+    },
+    {
+      "name": "discover-email",
+      "type": "api",
+      "description": "Find a professional email address given a person's name and company domain.",
+      "url": "https://www.startuphub.ai/api/v1/email/discover"
+    },
+    {
+      "name": "mcp-server",
+      "type": "mcp",
+      "description": "MCP server for AI tools (Claude, Cursor, Windsurf) to access StartupHub.ai data.",
+      "url": "https://www.startuphub.ai/api/v1/mcp"
+    },
+    {
+      "name": "submit-startup",
+      "type": "api",
+      "description": "Submit a new startup to be listed on StartupHub.ai. Agent-friendly: strict JSON schema, third-person prose, no HTML. Submissions go to a moderation queue and become public after admin approval (typically 24h). Optional logo_url is fetched and stored automatically. Returns field-level validation errors with suggestions on bad input. Costs 5 credits.",
+      "url": "https://www.startuphub.ai/api/v1/startups/submit"
+    },
+    {
+      "name": "submit-investor",
+      "type": "api",
+      "description": "Submit a new investor profile (VC, angel, accelerator, etc.) to StartupHub.ai. Same moderation flow as submit-startup. Deduped by website domain or name+country. Costs 5 credits.",
+      "url": "https://www.startuphub.ai/api/v1/investors/submit"
+    },
+    {
+      "name": "submit-person",
+      "type": "api",
+      "description": "Submit a new person profile (founder, executive, board member) to StartupHub.ai. Requires either current_title or linkedin_url to disambiguate from common-name dupes. Costs 5 credits.",
+      "url": "https://www.startuphub.ai/api/v1/people/submit"
+    },
+    {
+      "name": "submit-product",
+      "type": "api",
+      "description": "Submit a new product, tool, API, library, agent, model, dataset, or hardware to StartupHub.ai for moderation review. Optional startup_slug links to a parent company. Strict third-person format. Optional logo_url and up to 6 screenshot_urls fetched and stored automatically. Costs 5 credits.",
+      "url": "https://www.startuphub.ai/api/v1/products/submit"
+    },
+    {
+      "name": "submit-funding-round",
+      "type": "api",
+      "description": "Announce a funding round for a startup you own. Strict series vocabulary, USD amount, YYYY-MM-DD date. Dedup against same-startup same-series within 7 days. Costs 5 credits.",
+      "url": "https://www.startuphub.ai/api/v1/funding-rounds/submit"
+    },
+    {
+      "name": "submit-exit-event",
+      "type": "api",
+      "description": "Announce an IPO / Acquisition / Merger / SPAC / Buyout / Closure for a startup you own. Costs 5 credits.",
+      "url": "https://www.startuphub.ai/api/v1/exit-events/submit"
+    },
+    {
+      "name": "submit-research",
+      "type": "api",
+      "description": "Submit a research paper / preprint. Optional startup link. Dedup by arxiv_id or doi. Costs 5 credits.",
+      "url": "https://www.startuphub.ai/api/v1/research/submit"
+    },
+    {
+      "name": "submit-patent",
+      "type": "api",
+      "description": "Submit a patent record. Required patent_number (e.g. US12345678B2). Dedup by patent_number. Costs 5 credits.",
+      "url": "https://www.startuphub.ai/api/v1/patents/submit"
+    },
+    {
+      "name": "submit-news",
+      "type": "api",
+      "description": "Submit a news article / press release. Third-person, controlled categories, 100-10000 words. Dedup by source_url or similar title in 30 days. Costs 5 credits.",
+      "url": "https://www.startuphub.ai/api/v1/news/submit"
+    }
+  ]
+}
