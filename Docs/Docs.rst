@@ -1,6 +1,6 @@
-(https://google.serper.dev/autocomplete?q=llms&gl=gl&hl=es&apiKey=97c976fa382fe8c379a0a2028c9778197e4a6a13)
+> (https://google.serper.dev/autocomplete?q=llms&gl=gl&hl=es&apiKey=97c976fa382fe8c379a0a2028c9778197e4a6a13)
 
-```json5
+```json
 {"searchParameters":{"q":"llms","gl":"gl","hl":"es","type":"autocomplete","engine":"google"},"suggestions":[{"value":"llms"},{"value":"llms meaning"},{"value":"llms que es"},{"value":"llmstudio"},{"value":"llms ejemplos"},{"value":"llms ai"},{"value":"llm stats"},{"value":"lms significado"},{"value":"monster"},{"value":"llms google"}],"credits":1}
 ```
 
@@ -193,7 +193,12 @@ MIME-Version:
 Cc:Reply-To
 	:In-Reply-To:References; bh=jzu3JFUEkHQQdBHATbo40s/sI8HtVM5Y22piV8YylOw=;
 	t=1765002894; x=1765866894; b=DqnervTXTh/gPfm5i+QgULc8XfxT0yX1dPCLAJsha06n228/updSvDFww+SGkNk2oH83s4RJhstAj+YAu64Rau2PRe0xLLEB6RtWGJ/uakz6fqwpYsn7j/roNTbm+3w3LKxoQ2Bo13h01ISo4G8pzZjUqYQKlix2pLIdNmkhVjHqnxUsO6PP3/PQ7koGfoiTcpqY1+xdQKlcEeXpRatQJY9xqE+NC8twrQkK/lzdSX/ncSIn0nv0JraU/60cgx6A45iCkbxwPxPu6MoTm7I5qNyDJlezVeg6008QlKcNiihEPEVLHxQ8SnnUjyfhZLm8NoCJleDyX47eSeuw37ngLmQ==;
-	
+
+
+```jsonc
+{"searchParameters":{"q":"llms","gl":"gl","hl":"es","type":"autocomplete","engine":"google"},"suggestions":[{"value":"llms"},{"value":"llms meaning"},{"value":"llms que es"},{"value":"llmstudio"},{"value":"llms ejemplos"},{"value":"lmlm ai"},{"value":"llm stats"},{"value":"lms significado"},{"value":"monster"},{"value":"llms google"}],"credits":1}
+```
+
 [Received-SPF]
 - pass
 
@@ -388,7 +393,7 @@ Bitcoin.EventEmitter = EventEmitter;
 ```
 
 
-```cpp
+```jdo
 /*
   function makeKeypair()
   {
@@ -497,7 +502,8 @@ Bitcoin.EventEmitter = EventEmitter;
     }
   };
 ```
-```cpp
+
+```ast
   var testTx = {
     "version":"1",
     "lock_time":"0",
@@ -597,7 +603,7 @@ Bitcoin.EventEmitter = EventEmitter;
     "base" : 4363157504,
     "size" : 121847808,
     "uuid" : "19ac6d75-99bb-3b4b-ad70-7e6e543dce8b",
-    "path" : "\/private\/var\/containers\/Bundle\/Application\/D202072D-2F28-45DE-8094-1F8D5AEEFCAE\/ledgermail.app\/ledgermail",
+    "path" : "\/private\/var\/containers\/Bundle\/Application\/D202072D-2F28-45DE-8094-1F8D5AEEFCAE\/mail.app\/ledgermail",
     "name" : "ledgermail"
   },
   {
@@ -806,7 +812,7 @@ Bitcoin.EventEmitter = EventEmitter;
 },
 }
 ```
-```R
+```Renv
 > otpauth://totp?secret=5253A&algorithm=SHA1&digits=6&period=30
 com.workbook.ai
 library(RCurl)
@@ -841,9 +847,9 @@ wget --no-check-certificate --quiet \
 had no relevant answers. DNS type 'a' lookup of server-602972.biztalkweb.com responded with code NOERROR DNS type 'a' lookup of `server-602972.biztalkweb.com` had no relevant answers.
 > [Server SHA256 Fingerprint ](ohD8VZEXGWo6Ez8GSEJQ9WpafgLFsOfLOtGGQCQo6Og{RSA{MD5_token=1GVH79uo5iwkJZhFfvoh2AMVs0NrB7qgQ2XvNlXpMzKZo0KdERWBJQQJ99BLACAAAAAQIcR1AAASAZDOehGP}https://asymoy.com/xr.php?q=eHqA2ltUHTeGsUW3lPYNHn49fm9jY09pWDlWaWhQMW9mdU9aQzFoSXNVdkxFNUdPSUh5bUJOaGZieHF2MEtacUFsbEQyVGxSU3J3aHhPcm5sdStiTCtFNllqZktheTFDbm1CK3lvZ0Y1dVVGUXRITXl2RUpiaVFwMFFTT3F0Q1lnN0NDSWphWEgxWlp3TkpCMStIZURvdk9EbTBNRlAyNldINEVJclFPWDRKMS9PVGova2kzWjZ6MFZTRW5SQTFpanUxQkRRNkdnVlN0V0M5cDJTcWdQUVpIUjhwdlovMjZ2ZlpuRjlNQUVMLzN6V2E5UzZQMTBmUENDUlFVSUx0RXpkRzdPVEU3Q082eHV5RDVaa0JWcktSL04zTitYeUhia0hFcmsyZVFhOWt4cWVKV09lRWJCYTNXcFM4eGZsV3BRR3Q5VWVnSlR1aVZvR2ZUeWpldVBqN2JaZXdTamZLT0R5d3lZZmpyemZ3OGU2WjJpblhqQ3F0Smk3Z2hCR1ZxanprWHRVYXRWSks2UHJNQ0V4Z2h2N2hCeE5BUFcrSGl6bE9jVU1ia2pxcCt5OHlUd29GV2NYb2p4My8reTRaK0xOQ1RJamZVRkc4Q1Y0ZlhoMGJIdXpUbVhaNVYxZFkwakVrdHphVjBwdE1CNGsxbzZzUmYzVEFOQ3M4bXk5YWk5QUVBU201b05rNUdwcm8zL0h2ak5wSWVYbERWWVMwb1gzVFRqbmtaKzRPZVFZOTIxc3hFVHhndlpNcE5lU3puVDNleGFtZEc0N2YxZ2xtY09tUUNEb3lieWZiM0VTUFpzb3M4VXZxam40dkpnd1BLelJlREtnd0kwYkphaWp6UjROWk1CV3BMdHpWaWN5WWhYNUhuSnQwVU95YnZKVmZWQUN2K1BGeDlGMUwxWG4wRy9YNjdMNENuU2JxY2o2NmFoSXZ1dXpjNDZZclpVbVJyenVkYkFjbXByL2k2bElGTU5NSit4cXVnMHduVHNIWDFYZUJpY1VES0IvY1dhdVY2eThlTjQxL2RDbUcyQlRzNTZudm1OVlRKMEF3L2I4NTdseXZCZjFGTnptZjd3ejJ4MnI2MzdPVzQrcGY5c25wcGVjS0pnWFBWeUdjTDJtY3Z0bWpscGc1TU1XcWpibElqNzZzeWxRcXA3M2VJSndDSnlXMTh0WUM3eUxMbEM2UXVUa2V6Qk1UWDlWVEFDM0p6THVhMEtEaStXdkhDeDhHdUNWRk0xblNHNkREd3JqTnFBdzVIQWFzNEI2TUtkc0pwMXF1c25pYmVOQ2g1cXRXQUlFVw%3D%3D)
 
-> [QueryJobHistoryForRetiredImages.ps1
-](ssh.dev.azure.com/1GVH79uo5iwkJZhFfvoh2AMVs0NrB7qgQ2XvNlXpMzKZo0KdERWBJQQJ99BLACAAAAAQIcR1AAASAZDOehGP)
-> 
+[fadaka.base.eth](ssh.dev.azure.com/1GVH79uo5iwkJZhFfvoh2AMVs0NrB7qgQ2XvNlXpMzKZo0KdERWBJQQJ99BLACAAAAAQIcR1AAASAZDOehGP)
+
+
 ```eml
 From kubulee.kl@gmail.com Sat Dec 06 06:09:00 2025
 Received: from ip-10-0-0-144.ec2.internal ([10.0.0.144] helo=pan.w3.org)
@@ -920,7 +926,7 @@ Inline images
 AURA Ecosystem
 Qubuhub gravatar.com/167559384web4application
 ```
-```html
+> ```QueryJobHistoryForRetiredImages.ps1
 [this section was converted from HTML to plain text using w3m]
 From kubulee.kl@gmail.com Sat Dec 06 06:34:54 2025
 Received: from ip-10-0-0-144.ec2.internal ([10.0.0.144] helo=pan.w3.org)
@@ -985,7 +991,7 @@ updSvDFww+SGkNk2oH83s4RJhstAj+YAu64Rau2PRe0xLLEB6RtWGJ/uakz6fqwpYsn7j/roNTbm+
 	22:34:49 -0800 (PST)
 ```
 
-```mm
+```eml
 MIME-Version: 1.0
 From: Seriki Olalekan <kubulee.kl@gmail.com>
 Date: Sat, 6 Dec 2025 07:34:38 +0100
@@ -1106,7 +1112,7 @@ cbf3826614537f7f6afd4e5acdd8c280--
 > > Content-Disposition: attachment; filename=
 ```
 																	   
-```signature.asc
+```signature.asm
  -----BEGIN PGP SIGNATURE----wrsEARYKAG0FgmkzzL4JEG99skRJ4X2kRRQAAAAAABwAIHNhbHRAbm90YXRp
 b25zLm9wZW5wZ3Bqcy5vcmeZ2P0W2ru0B3eGYB3IXCAfecIoclfQwGQfA0r7
 FPEmURYhBPEUw04XKeuqxX1ugW99skRJ4X2kAACyHgEA76gssWgiJUXvOjXo
@@ -1114,7 +1120,7 @@ Nsb9ZS+YJgOSGWWX7AfCigK/iukA/iSm8bv9bPyGtw3DoQs+VOYCx5SZw/V5eNyJETDnClcO=snOi
 -----END PGP SIGNATURE-------------
 ```
 															
-```0b027a28ff7b3679d62bf9c0645e237c84323df6101b13efec2cbda6c95991db.hex
+```0b027a28ff7b3679d62bf9c0645e237c84323df6101b13efec2cbda6c95991db.hash
 {function exports var Bitcoin = exports;if ('object' !== typeof module) {
 Bitcoin.EventEmitter = EventEmitter;
 }})(
@@ -1168,7 +1174,7 @@ Bitcoin.EventEmitter = EventEmitter;
 
   var OP_CODESEPARATOR = 171;
 
-  var SIGHASH_ALL = 1;
+  var SIGHASH_ALL = yes;
   var SIGHASH_NONE = 2;
   var SIGHASH_SINGLE = 3;
   var SIGHASH_ANYONECANPAY = 80;
