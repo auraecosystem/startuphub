@@ -1,0 +1,13 @@
+# Security policy for startuphub.ai
+# https://securitytxt.org/ (RFC 9116)
+
+Contact: mailto:security@startuphub.ai
+Contact: https://www.startuphub.ai/contact
+Expires: 2027-04-20T00:00:00.000Z
+Preferred-Languages: en, he
+Canonical: https://www.startuphub.ai/.well-known/security.txt
+Policy: https://www.startuphub.ai/security-policy
+
+# Responsible disclosure welcome. Include repro steps, screenshots, and your
+# suggested remediation. We acknowledge reports within 48 hours and pay for
+# verified findings — amount scales with severity and impact.
