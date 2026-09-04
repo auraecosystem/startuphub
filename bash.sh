@@ -12,3 +12,11 @@ buf curl --schema . --protocol grpc \
     "model": "grok-4.6"
   }' \
   https://api.x.ai/xai_api.Tokenize/TokenizeText
+
+buf curl --schema . --protocol grpc \
+  -H "Authorization: Bearer $XAI_API_KEY" \
+  --data '{
+    "model": "grok-4.6",
+    "messages": [{"role": "ROLE_USER", "content": [{"text": "What is the meaning of life?"}]}]
+  }' \
+  https://api.x.ai/xai_api.Chat/GetCompletion
