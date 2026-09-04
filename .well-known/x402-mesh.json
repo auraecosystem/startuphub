@@ -1,1 +1,10 @@
-
+{
+  "protocol": "x402-mesh/0.1",
+  "vendor_id": "startuphub",
+  "name": "StartupHub.ai Email Validator",
+  "categories": ["email-validation"],
+  "endpoint": "https://www.startuphub.ai/api/v1/email/validate",
+  "registry_url": "https://www.startuphub.ai/api/x402-mesh/registry",
+  "public_key": "eDM_J-hX6KlZbxuAp77WlQe9RqloBceOjeZwKcXYMIc",
+  "contact": "daniel@startuphub.ai"
+}
